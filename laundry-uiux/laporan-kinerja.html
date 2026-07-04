@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Kinerja - Laundry Kiloan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex">
+
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+  <div class="p-5 border-b border-slate-200">
+    <div class="font-bold text-sky-700 text-lg">🧺 Laundry Kiloan</div>
+    <div class="text-xs text-slate-400">Panel Owner</div>
+  </div>
+  <nav class="flex-1 p-3 space-y-1">
+    <a href="dashboard-owner.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">🏠 Dashboard Owner</a>
+    <a href="laporan-pendapatan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">💰 Laporan Pendapatan</a>
+    <a href="laporan-kinerja.html" class="block px-3 py-2 rounded-lg bg-sky-50 text-sky-700 font-medium">👥 Laporan Kinerja</a>
+    <a href="kelola-pegawai.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">⚙️ Kelola Pegawai</a>
+    <a href="wa-simulation.html" target="_blank" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📱 Lihat WA Pelanggan</a>
+  </nav>
+  <div class="p-4 border-t border-slate-200">
+    <div class="text-sm font-medium text-slate-700" id="userNama">-</div>
+    <button id="logoutBtn" class="text-xs text-red-500 hover:underline mt-1">🚪 Logout</button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8">
+  <h1 class="text-2xl font-bold text-slate-800 mb-6">Laporan Kinerja Karyawan</h1>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-6 flex flex-wrap items-end gap-3">
+    <div>
+      <label class="block text-sm text-slate-600 mb-1">Tanggal Awal</label>
+      <input id="dari" type="date" class="border border-slate-300 rounded-lg px-3 py-2">
+    </div>
+    <div>
+      <label class="block text-sm text-slate-600 mb-1">Tanggal Akhir</label>
+      <input id="sampai" type="date" class="border border-slate-300 rounded-lg px-3 py-2">
+    </div>
+    <button id="btnTampilkan" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">Tampilkan</button>
+    <button id="btnSimpan" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg px-4 py-2">Simpan Laporan</button>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-left">
+        <tr>
+          <th class="px-4 py-3">Nama Karyawan</th>
+          <th class="px-4 py-3">Username</th>
+          <th class="px-4 py-3">Jml Pesanan</th>
+          <th class="px-4 py-3">Jml Transaksi</th>
+          <th class="px-4 py-3">Score Kinerja</th>
+        </tr>
+      </thead>
+      <tbody id="tabelKinerja"></tbody>
+    </table>
+  </div>
+</main>
+
+<script src="js/app.js"></script>
+<script>
+let lastKaryawan = [];
+let lastPeriode = {};
+
+(async () => {
+  const user = await checkAuth(true);
+  if (!user) return;
+  setupLogout();
+  const today = new Date().toISOString().slice(0, 10);
+  document.getElementById('dari').value = today;
+  document.getElementById('sampai').value = today;
+})();
+
+document.getElementById('btnTampilkan').addEventListener('click', async () => {
+  const dari = document.getElementById('dari').value;
+  const sampai = document.getElementById('sampai').value;
+  if (!dari || !sampai) { alert('Isi periode terlebih dahulu'); return; }
+  const res = await fetch(`api/laporan/kinerja.php?dari=${dari}&sampai=${sampai}`);
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  lastKaryawan = data.karyawan;
+  lastPeriode = { periode_awal: dari, periode_akhir: sampai };
+
+  document.getElementById('tabelKinerja').innerHTML = data.karyawan.map(k => `
+    <tr class="border-t border-slate-100">
+      <td class="px-4 py-3">${k.nama}</td>
+      <td class="px-4 py-3">${k.username}</td>
+      <td class="px-4 py-3">${k.jml_pesanan}</td>
+      <td class="px-4 py-3">${k.jml_transaksi}</td>
+      <td class="px-4 py-3 font-semibold">${k.score_kinerja}%</td>
+    </tr>
+  `).join('') || '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">Belum ada data</td></tr>';
+});
+
+document.getElementById('btnSimpan').addEventListener('click', async () => {
+  if (lastKaryawan.length === 0) { alert('Tampilkan laporan terlebih dahulu'); return; }
+  const res = await fetch('api/laporan/simpan_kinerja.php', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ...lastPeriode, karyawan: lastKaryawan })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  alert('Laporan kinerja berhasil disimpan');
+});
+</script>
+</body>
+</html>

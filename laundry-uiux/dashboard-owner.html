@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard Owner - Laundry Kiloan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex">
+
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+  <div class="p-5 border-b border-slate-200">
+    <div class="font-bold text-sky-700 text-lg">🧺 Laundry Kiloan</div>
+    <div class="text-xs text-slate-400">Panel Owner</div>
+  </div>
+  <nav class="flex-1 p-3 space-y-1">
+    <a href="dashboard-owner.html" class="block px-3 py-2 rounded-lg bg-sky-50 text-sky-700 font-medium">🏠 Dashboard Owner</a>
+    <a href="laporan-pendapatan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">💰 Laporan Pendapatan</a>
+    <a href="laporan-kinerja.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">👥 Laporan Kinerja</a>
+    <a href="kelola-pegawai.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">⚙️ Kelola Pegawai</a>
+    <a href="wa-simulation.html" target="_blank" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📱 Lihat WA Pelanggan</a>
+  </nav>
+  <div class="p-4 border-t border-slate-200">
+    <div class="text-sm font-medium text-slate-700" id="userNama">-</div>
+    <button id="logoutBtn" class="text-xs text-red-500 hover:underline mt-1">🚪 Logout</button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8">
+  <h1 class="text-2xl font-bold text-slate-800 mb-6">Dashboard Owner</h1>
+
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+      <div class="text-sm text-slate-500">Total Pendapatan (Bulan Ini)</div>
+      <div class="text-2xl font-bold text-sky-700 mt-1" id="statPendapatan">Rp 0</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+      <div class="text-sm text-slate-500">Total Pesanan (Bulan Ini)</div>
+      <div class="text-2xl font-bold text-green-700 mt-1" id="statPesanan">0</div>
+    </div>
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+      <div class="text-sm text-slate-500">Rata-rata / Pesanan</div>
+      <div class="text-2xl font-bold text-amber-700 mt-1" id="statRata">Rp 0</div>
+    </div>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-8">
+    <h2 class="font-semibold text-slate-800 mb-3">Pendapatan 7 Hari Terakhir</h2>
+    <canvas id="chartPendapatan" height="90"></canvas>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+      <h2 class="font-semibold text-slate-800 mb-3">Pesanan Terbaru</h2>
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-left">
+          <tr><th class="py-2">No.</th><th>Pelanggan</th><th>Layanan</th><th>Status</th></tr>
+        </thead>
+        <tbody id="tabelPesananTerbaru"></tbody>
+      </table>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+      <h2 class="font-semibold text-slate-800 mb-3">Kinerja Karyawan Bulan Ini</h2>
+      <table class="w-full text-sm">
+        <thead class="text-slate-500 text-left">
+          <tr><th class="py-2">Nama</th><th>Jml Pesanan Ditangani</th></tr>
+        </thead>
+        <tbody id="tabelKinerja"></tbody>
+      </table>
+    </div>
+  </div>
+</main>
+
+<script src="js/app.js"></script>
+<script>
+(async () => {
+  const user = await checkAuth(true);
+  if (!user) return;
+  setupLogout();
+  await loadDashboard();
+})();
+
+async function loadDashboard() {
+  const res = await fetch('api/dashboard/owner.php');
+  const data = await res.json();
+
+  document.getElementById('statPendapatan').textContent = formatRupiah(data.total_pendapatan);
+  document.getElementById('statPesanan').textContent = data.total_pesanan;
+  document.getElementById('statRata').textContent = formatRupiah(data.rata_rata);
+
+  new Chart(document.getElementById('chartPendapatan'), {
+    type: 'bar',
+    data: {
+      labels: data.grafik_7_hari.map(d => d.tanggal.slice(5)),
+      datasets: [{ label: 'Pendapatan', data: data.grafik_7_hari.map(d => d.total), backgroundColor: '#0284c7' }]
+    },
+    options: { responsive: true, plugins: { legend: { display: false } } }
+  });
+
+  document.getElementById('tabelPesananTerbaru').innerHTML = data.pesanan_terbaru.map(p => `
+    <tr class="border-t border-slate-100">
+      <td class="py-2">${p.id}</td>
+      <td>${p.pelanggan_nama}</td>
+      <td>${p.layanan}</td>
+      <td>${statusBadge(p.status)}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" class="py-4 text-center text-slate-400">Belum ada pesanan</td></tr>';
+
+  document.getElementById('tabelKinerja').innerHTML = data.kinerja_karyawan.map(k => `
+    <tr class="border-t border-slate-100">
+      <td class="py-2">${k.nama}</td>
+      <td>${k.jml_pesanan}</td>
+    </tr>
+  `).join('') || '<tr><td colspan="2" class="py-4 text-center text-slate-400">Belum ada data</td></tr>';
+}
+</script>
+</body>
+</html>

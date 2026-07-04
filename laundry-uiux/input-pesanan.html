@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Input Pesanan - Laundry Kiloan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex">
+
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+  <div class="p-5 border-b border-slate-200">
+    <div class="font-bold text-sky-700 text-lg">🧺 Laundry Kiloan</div>
+    <div class="text-xs text-slate-400">Panel Karyawan</div>
+  </div>
+  <nav class="flex-1 p-3 space-y-1">
+    <a href="dashboard-karyawan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">🏠 Dashboard</a>
+    <a href="input-pesanan.html" class="block px-3 py-2 rounded-lg bg-sky-50 text-sky-700 font-medium">📝 Input Pesanan</a>
+    <a href="daftar-pesanan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📋 Daftar Pesanan</a>
+    <a href="wa-simulation.html" target="_blank" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📱 Lihat WA Pelanggan</a>
+  </nav>
+  <div class="p-4 border-t border-slate-200">
+    <div class="text-sm font-medium text-slate-700" id="userNama">-</div>
+    <button id="logoutBtn" class="text-xs text-red-500 hover:underline mt-1">🚪 Logout</button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8 max-w-2xl">
+  <h1 class="text-2xl font-bold text-slate-800 mb-6">Input Pesanan Baru</h1>
+
+  <!-- STEP 1: Cari Pelanggan -->
+  <div id="step1" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
+    <h2 class="font-semibold text-slate-800 mb-3">Step 1 — Cari Pelanggan</h2>
+    <div class="flex gap-2">
+      <input id="noHpInput" type="text" placeholder="Nomor HP pelanggan" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
+      <button id="btnCari" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">Cari</button>
+    </div>
+
+    <div id="pelangganDitemukan" class="hidden mt-4 bg-green-50 text-green-700 rounded-lg px-4 py-3 text-sm"></div>
+
+    <div id="formPelangganBaru" class="hidden mt-4 space-y-3 border-t border-slate-100 pt-4">
+      <p class="text-sm text-slate-500">Pelanggan belum terdaftar. Daftarkan dulu:</p>
+      <input id="namaBaru" type="text" placeholder="Nama pelanggan" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+      <input id="alamatBaru" type="text" placeholder="Alamat (opsional)" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+      <button id="btnDaftar" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg px-4 py-2 text-sm">Daftarkan & Lanjut</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Input Pesanan -->
+  <div id="step2" class="hidden bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
+    <h2 class="font-semibold text-slate-800 mb-3">Step 2 — Input Pesanan</h2>
+    <p class="text-sm text-slate-500 mb-3">Pelanggan: <span class="font-semibold text-slate-800" id="namaPelangganTampil"></span></p>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Jenis Layanan</label>
+        <select id="layananSelect" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+          <option value="Reguler">Reguler — Rp 7.000/kg</option>
+          <option value="Express">Express — Rp 12.000/kg</option>
+          <option value="Cuci+Setrika">Cuci+Setrika — Rp 10.000/kg</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Berat Cucian (kg)</label>
+        <input id="beratInput" type="number" min="0.1" step="0.1" class="w-full border border-slate-300 rounded-lg px-3 py-2" placeholder="contoh: 3.5">
+      </div>
+    </div>
+
+    <div class="bg-slate-50 rounded-lg px-4 py-3 text-sm mb-3">
+      Total Biaya: <span class="font-bold text-sky-700" id="totalPreview">Rp 0</span>
+    </div>
+
+    <table class="w-full text-xs text-slate-500 mb-4">
+      <tr><td class="py-1">Reguler</td><td>Rp 7.000/kg</td></tr>
+      <tr><td class="py-1">Express</td><td>Rp 12.000/kg</td></tr>
+      <tr><td class="py-1">Cuci+Setrika</td><td>Rp 10.000/kg</td></tr>
+    </table>
+
+    <button id="btnLanjutKonfirmasi" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">Lanjut ke Konfirmasi</button>
+  </div>
+
+  <!-- STEP 3: Konfirmasi -->
+  <div id="step3" class="hidden bg-white rounded-xl shadow-sm border border-slate-100 p-6">
+    <h2 class="font-semibold text-slate-800 mb-3">Step 3 — Konfirmasi & Pilih Pembayaran</h2>
+    <div class="bg-slate-50 rounded-lg p-4 text-sm space-y-1 mb-4" id="ringkasan"></div>
+    <div class="flex gap-3">
+      <button id="btnBayarSekarang" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg py-2">Bayar Sekarang</button>
+      <button id="btnBayarNanti" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg py-2">Bayar Nanti</button>
+    </div>
+  </div>
+</main>
+
+<script src="js/app.js"></script>
+<script>
+let pelanggan = null;
+let layanan = 'Reguler';
+let berat = 0;
+let totalBiaya = 0;
+let pesananId = null;
+
+const HARGA = { 'Reguler': 7000, 'Express': 12000, 'Cuci+Setrika': 10000 };
+
+(async () => {
+  const user = await checkAuth(false);
+  if (!user) return;
+  setupLogout();
+})();
+
+document.getElementById('btnCari').addEventListener('click', async () => {
+  const no_hp = document.getElementById('noHpInput').value.trim();
+  if (!no_hp) return;
+  const res = await fetch('api/pelanggan/search.php?no_hp=' + encodeURIComponent(no_hp));
+  const data = await res.json();
+  if (data.pelanggan) {
+    pelanggan = data.pelanggan;
+    document.getElementById('pelangganDitemukan').classList.remove('hidden');
+    document.getElementById('pelangganDitemukan').textContent = `Pelanggan ditemukan: ${pelanggan.nama}`;
+    document.getElementById('formPelangganBaru').classList.add('hidden');
+    lanjutKeStep2();
+  } else {
+    document.getElementById('pelangganDitemukan').classList.add('hidden');
+    document.getElementById('formPelangganBaru').classList.remove('hidden');
+  }
+});
+
+document.getElementById('btnDaftar').addEventListener('click', async () => {
+  const no_hp = document.getElementById('noHpInput').value.trim();
+  const nama = document.getElementById('namaBaru').value.trim();
+  const alamat = document.getElementById('alamatBaru').value.trim();
+  if (!nama) { alert('Nama wajib diisi'); return; }
+  const res = await fetch('api/pelanggan/create.php', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nama, no_hp, alamat })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  pelanggan = data.pelanggan;
+  document.getElementById('formPelangganBaru').classList.add('hidden');
+  lanjutKeStep2();
+});
+
+function lanjutKeStep2() {
+  document.getElementById('step2').classList.remove('hidden');
+  document.getElementById('namaPelangganTampil').textContent = pelanggan.nama;
+  updatePreview();
+}
+
+document.getElementById('layananSelect').addEventListener('change', updatePreview);
+document.getElementById('beratInput').addEventListener('input', updatePreview);
+
+function updatePreview() {
+  layanan = document.getElementById('layananSelect').value;
+  berat = parseFloat(document.getElementById('beratInput').value) || 0;
+  totalBiaya = berat * HARGA[layanan];
+  document.getElementById('totalPreview').textContent = formatRupiah(totalBiaya);
+}
+
+document.getElementById('btnLanjutKonfirmasi').addEventListener('click', () => {
+  if (berat <= 0) { alert('Berat cucian harus lebih dari 0'); return; }
+  document.getElementById('step3').classList.remove('hidden');
+  document.getElementById('ringkasan').innerHTML = `
+    <div>Pelanggan: <b>${pelanggan.nama}</b></div>
+    <div>Layanan: <b>${layanan}</b></div>
+    <div>Berat: <b>${berat} kg</b></div>
+    <div>Total Biaya: <b>${formatRupiah(totalBiaya)}</b></div>
+  `;
+});
+
+async function simpanPesanan() {
+  const res = await fetch('api/pesanan/create.php', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pelanggan_id: pelanggan.id, layanan, berat_kg: berat })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return null; }
+  return data.pesanan.id;
+}
+
+document.getElementById('btnBayarSekarang').addEventListener('click', async () => {
+  const id = await simpanPesanan();
+  if (!id) return;
+  alert('Pesanan berhasil dibuat! Nota telah dikirim ke WA pelanggan.');
+  window.location.href = `proses-pembayaran.html?pesanan_id=${id}`;
+});
+
+document.getElementById('btnBayarNanti').addEventListener('click', async () => {
+  const id = await simpanPesanan();
+  if (!id) return;
+  alert('Pesanan berhasil dibuat! Nota telah dikirim ke WA pelanggan.');
+  window.location.href = 'daftar-pesanan.html';
+});
+</script>
+</body>
+</html>

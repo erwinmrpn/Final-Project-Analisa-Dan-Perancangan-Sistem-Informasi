@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daftar Pesanan - Laundry Kiloan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex">
+
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+  <div class="p-5 border-b border-slate-200">
+    <div class="font-bold text-sky-700 text-lg">🧺 Laundry Kiloan</div>
+    <div class="text-xs text-slate-400">Panel Karyawan</div>
+  </div>
+  <nav class="flex-1 p-3 space-y-1">
+    <a href="dashboard-karyawan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">🏠 Dashboard</a>
+    <a href="input-pesanan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📝 Input Pesanan</a>
+    <a href="daftar-pesanan.html" class="block px-3 py-2 rounded-lg bg-sky-50 text-sky-700 font-medium">📋 Daftar Pesanan</a>
+    <a href="wa-simulation.html" target="_blank" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📱 Lihat WA Pelanggan</a>
+  </nav>
+  <div class="p-4 border-t border-slate-200">
+    <div class="text-sm font-medium text-slate-700" id="userNama">-</div>
+    <button id="logoutBtn" class="text-xs text-red-500 hover:underline mt-1">🚪 Logout</button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8">
+  <h1 class="text-2xl font-bold text-slate-800 mb-6">Daftar Pesanan</h1>
+
+  <div class="flex gap-2 mb-4" id="filterBar">
+    <button data-filter="" class="filter-btn px-3 py-1.5 rounded-lg text-sm bg-sky-600 text-white">Semua</button>
+    <button data-filter="Masuk" class="filter-btn px-3 py-1.5 rounded-lg text-sm bg-white border border-slate-300">Masuk</button>
+    <button data-filter="Proses" class="filter-btn px-3 py-1.5 rounded-lg text-sm bg-white border border-slate-300">Proses</button>
+    <button data-filter="Selesai" class="filter-btn px-3 py-1.5 rounded-lg text-sm bg-white border border-slate-300">Selesai</button>
+    <button data-filter="hari_ini" class="filter-btn px-3 py-1.5 rounded-lg text-sm bg-white border border-slate-300">Hari Ini</button>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-left">
+        <tr>
+          <th class="px-4 py-3">No. Pesanan</th>
+          <th class="px-4 py-3">Pelanggan</th>
+          <th class="px-4 py-3">No. HP</th>
+          <th class="px-4 py-3">Layanan</th>
+          <th class="px-4 py-3">Berat</th>
+          <th class="px-4 py-3">Total Biaya</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Tgl Masuk</th>
+          <th class="px-4 py-3">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabelPesanan"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Modal Detail -->
+<div id="modalDetail" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-md">
+    <h3 class="font-semibold text-lg mb-3">Detail Pesanan</h3>
+    <div id="modalContent" class="text-sm space-y-1"></div>
+    <button id="btnTutupModal" class="mt-4 w-full bg-slate-600 hover:bg-slate-700 text-white rounded-lg py-2">Tutup</button>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+let filterAktif = '';
+
+(async () => {
+  const user = await checkAuth(false);
+  if (!user) return;
+  setupLogout();
+  await loadPesanan();
+})();
+
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.className = 'filter-btn px-3 py-1.5 rounded-lg text-sm bg-white border border-slate-300');
+    btn.className = 'filter-btn px-3 py-1.5 rounded-lg text-sm bg-sky-600 text-white';
+    filterAktif = btn.dataset.filter;
+    loadPesanan();
+  });
+});
+
+async function loadPesanan() {
+  let url = 'api/pesanan/list.php?';
+  if (filterAktif === 'hari_ini') url += 'hari_ini=1';
+  else if (filterAktif) url += 'status=' + filterAktif;
+  const res = await fetch(url);
+  const data = await res.json();
+  const tbody = document.getElementById('tabelPesanan');
+  if (data.pesanan.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="9" class="px-4 py-6 text-center text-slate-400">Tidak ada data</td></tr>';
+    return;
+  }
+  const next = { 'Masuk': 'Proses', 'Proses': 'Selesai' };
+  tbody.innerHTML = data.pesanan.map(p => `
+    <tr class="border-t border-slate-100">
+      <td class="px-4 py-3 font-medium">${p.id}</td>
+      <td class="px-4 py-3">${p.pelanggan_nama}</td>
+      <td class="px-4 py-3">${p.no_hp}</td>
+      <td class="px-4 py-3">${p.layanan}</td>
+      <td class="px-4 py-3">${p.berat_kg} kg</td>
+      <td class="px-4 py-3">${formatRupiah(p.total_biaya)}</td>
+      <td class="px-4 py-3">${statusBadge(p.status)}</td>
+      <td class="px-4 py-3">${formatTanggal(p.tanggal_masuk)}</td>
+      <td class="px-4 py-3 space-x-2 whitespace-nowrap">
+        ${next[p.status] ? `<button data-id="${p.id}" data-next="${next[p.status]}" class="btnUpdateStatus text-sky-600 hover:underline text-xs">Update Status</button>` : ''}
+        ${!p.sudah_bayar ? `<a href="proses-pembayaran.html?pesanan_id=${p.id}" class="text-emerald-600 hover:underline text-xs">Proses Bayar</a>` : ''}
+        <button data-id="${p.id}" class="btnDetail text-slate-500 hover:underline text-xs">Lihat Detail</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.btnUpdateStatus').forEach(btn => {
+    btn.addEventListener('click', () => updateStatus(btn.dataset.id, btn.dataset.next));
+  });
+  document.querySelectorAll('.btnDetail').forEach(btn => {
+    btn.addEventListener('click', () => lihatDetail(btn.dataset.id));
+  });
+}
+
+async function updateStatus(id, next) {
+  if (!confirm(`Ubah status ke ${next}?`)) return;
+  const res = await fetch('api/pesanan/update_status.php', {
+    method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ id })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  if (data.notifikasi_wa_terkirim) {
+    alert('Status diubah ke Selesai. Notifikasi WA telah dikirim ke pelanggan.');
+  }
+  loadPesanan();
+}
+
+async function lihatDetail(id) {
+  const res = await fetch('api/pesanan/detail.php?id=' + id);
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  const p = data.pesanan;
+  document.getElementById('modalContent').innerHTML = `
+    <div><b>No. Pesanan:</b> ${p.id}</div>
+    <div><b>Pelanggan:</b> ${p.pelanggan_nama} (${p.no_hp})</div>
+    <div><b>Layanan:</b> ${p.layanan}</div>
+    <div><b>Berat:</b> ${p.berat_kg} kg</div>
+    <div><b>Total Biaya:</b> ${formatRupiah(p.total_biaya)}</div>
+    <div><b>Status:</b> ${p.status}</div>
+    <div><b>Tgl Masuk:</b> ${formatTanggal(p.tanggal_masuk)}</div>
+    <div><b>Sudah Bayar:</b> ${p.sudah_bayar ? 'Ya' : 'Belum'}</div>
+  `;
+  document.getElementById('modalDetail').classList.remove('hidden');
+}
+
+document.getElementById('btnTutupModal').addEventListener('click', () => {
+  document.getElementById('modalDetail').classList.add('hidden');
+});
+</script>
+</body>
+</html>

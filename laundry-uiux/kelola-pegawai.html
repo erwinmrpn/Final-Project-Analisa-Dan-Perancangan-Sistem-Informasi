@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Kelola Pegawai - Laundry Kiloan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex">
+
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+  <div class="p-5 border-b border-slate-200">
+    <div class="font-bold text-sky-700 text-lg">🧺 Laundry Kiloan</div>
+    <div class="text-xs text-slate-400">Panel Owner</div>
+  </div>
+  <nav class="flex-1 p-3 space-y-1">
+    <a href="dashboard-owner.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">🏠 Dashboard Owner</a>
+    <a href="laporan-pendapatan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">💰 Laporan Pendapatan</a>
+    <a href="laporan-kinerja.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">👥 Laporan Kinerja</a>
+    <a href="kelola-pegawai.html" class="block px-3 py-2 rounded-lg bg-sky-50 text-sky-700 font-medium">⚙️ Kelola Pegawai</a>
+    <a href="wa-simulation.html" target="_blank" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📱 Lihat WA Pelanggan</a>
+  </nav>
+  <div class="p-4 border-t border-slate-200">
+    <div class="text-sm font-medium text-slate-700" id="userNama">-</div>
+    <button id="logoutBtn" class="text-xs text-red-500 hover:underline mt-1">🚪 Logout</button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8">
+  <div class="flex items-center justify-between mb-6">
+    <h1 class="text-2xl font-bold text-slate-800">Kelola Pegawai</h1>
+    <button id="btnTambah" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">+ Tambah Karyawan</button>
+  </div>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-slate-50 text-slate-500 text-left">
+        <tr>
+          <th class="px-4 py-3">Nama</th>
+          <th class="px-4 py-3">Username</th>
+          <th class="px-4 py-3">Role</th>
+          <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabelPegawai"></tbody>
+    </table>
+  </div>
+</main>
+
+<!-- Modal Tambah/Edit -->
+<div id="modalForm" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4">
+  <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+    <h3 class="font-semibold text-lg mb-4" id="modalTitle">Tambah Karyawan</h3>
+    <div class="space-y-3">
+      <input type="hidden" id="fId">
+      <div>
+        <label class="block text-sm text-slate-600 mb-1">Nama</label>
+        <input id="fNama" type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm text-slate-600 mb-1">Username</label>
+        <input id="fUsername" type="text" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm text-slate-600 mb-1">Password <span class="text-xs text-slate-400" id="passHint"></span></label>
+        <input id="fPassword" type="password" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+      </div>
+      <div id="roleWrap">
+        <label class="block text-sm text-slate-600 mb-1">Role</label>
+        <select id="fRole" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+          <option value="Karyawan">Karyawan</option>
+          <option value="Owner">Owner</option>
+        </select>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-5">
+      <button id="btnSimpanForm" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg py-2">Simpan</button>
+      <button id="btnBatal" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg py-2">Batal</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+<script>
+let mode = 'tambah';
+
+(async () => {
+  const user = await checkAuth(true);
+  if (!user) return;
+  setupLogout();
+  await loadPegawai();
+})();
+
+async function loadPegawai() {
+  const res = await fetch('api/pegawai/list.php');
+  const data = await res.json();
+  document.getElementById('tabelPegawai').innerHTML = data.pegawai.map(p => `
+    <tr class="border-t border-slate-100">
+      <td class="px-4 py-3">${p.nama}</td>
+      <td class="px-4 py-3">${p.username}</td>
+      <td class="px-4 py-3">${p.role}</td>
+      <td class="px-4 py-3">
+        <label class="inline-flex items-center cursor-pointer">
+          <input type="checkbox" class="sr-only toggleAktif" data-id="${p.id}" ${p.aktif ? 'checked' : ''}>
+          <span class="w-10 h-5 flex items-center rounded-full p-0.5 ${p.aktif ? 'bg-emerald-500' : 'bg-slate-300'} transition">
+            <span class="h-4 w-4 bg-white rounded-full shadow transform transition ${p.aktif ? 'translate-x-5' : ''}"></span>
+          </span>
+        </label>
+        <span class="text-xs ml-1 ${p.aktif ? 'text-emerald-600' : 'text-slate-400'}">${p.aktif ? 'Aktif' : 'Nonaktif'}</span>
+      </td>
+      <td class="px-4 py-3">
+        <button data-id="${p.id}" data-nama="${p.nama}" data-username="${p.username}" class="btnEdit text-sky-600 hover:underline text-xs">Edit</button>
+      </td>
+    </tr>
+  `).join('');
+
+  document.querySelectorAll('.toggleAktif').forEach(cb => {
+    cb.addEventListener('change', async () => {
+      await fetch('api/pegawai/toggle.php', {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: cb.dataset.id })
+      });
+      loadPegawai();
+    });
+  });
+
+  document.querySelectorAll('.btnEdit').forEach(btn => {
+    btn.addEventListener('click', () => bukaModal('edit', btn.dataset));
+  });
+}
+
+function bukaModal(m, data) {
+  mode = m;
+  document.getElementById('modalForm').classList.remove('hidden');
+  document.getElementById('fPassword').value = '';
+  if (m === 'tambah') {
+    document.getElementById('modalTitle').textContent = 'Tambah Karyawan';
+    document.getElementById('fId').value = '';
+    document.getElementById('fNama').value = '';
+    document.getElementById('fUsername').value = '';
+    document.getElementById('passHint').textContent = '';
+    document.getElementById('roleWrap').classList.remove('hidden');
+  } else {
+    document.getElementById('modalTitle').textContent = 'Edit Karyawan';
+    document.getElementById('fId').value = data.id;
+    document.getElementById('fNama').value = data.nama;
+    document.getElementById('fUsername').value = data.username;
+    document.getElementById('passHint').textContent = '(opsional)';
+    document.getElementById('roleWrap').classList.add('hidden');
+  }
+}
+
+document.getElementById('btnTambah').addEventListener('click', () => bukaModal('tambah', {}));
+document.getElementById('btnBatal').addEventListener('click', () => document.getElementById('modalForm').classList.add('hidden'));
+
+document.getElementById('btnSimpanForm').addEventListener('click', async () => {
+  const nama = document.getElementById('fNama').value.trim();
+  const username = document.getElementById('fUsername').value.trim();
+  const password = document.getElementById('fPassword').value;
+
+  if (mode === 'tambah') {
+    const role = document.getElementById('fRole').value;
+    if (!nama || !username || !password) { alert('Lengkapi semua field'); return; }
+    const res = await fetch('api/pegawai/create.php', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ nama, username, password, role })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error); return; }
+  } else {
+    const id = document.getElementById('fId').value;
+    if (!nama || !username) { alert('Lengkapi semua field'); return; }
+    const res = await fetch('api/pegawai/update.php', {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id, nama, username, password })
+    });
+    const data = await res.json();
+    if (!res.ok) { alert(data.error); return; }
+  }
+
+  document.getElementById('modalForm').classList.add('hidden');
+  loadPegawai();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Proses Pembayaran - Laundry Kiloan</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen flex">
+
+<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
+  <div class="p-5 border-b border-slate-200">
+    <div class="font-bold text-sky-700 text-lg">🧺 Laundry Kiloan</div>
+    <div class="text-xs text-slate-400">Panel Karyawan</div>
+  </div>
+  <nav class="flex-1 p-3 space-y-1">
+    <a href="dashboard-karyawan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">🏠 Dashboard</a>
+    <a href="input-pesanan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📝 Input Pesanan</a>
+    <a href="daftar-pesanan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📋 Daftar Pesanan</a>
+    <a href="wa-simulation.html" target="_blank" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📱 Lihat WA Pelanggan</a>
+  </nav>
+  <div class="p-4 border-t border-slate-200">
+    <div class="text-sm font-medium text-slate-700" id="userNama">-</div>
+    <button id="logoutBtn" class="text-xs text-red-500 hover:underline mt-1">🚪 Logout</button>
+  </div>
+</aside>
+
+<main class="flex-1 p-8 max-w-lg">
+  <h1 class="text-2xl font-bold text-slate-800 mb-6">Proses Pembayaran</h1>
+
+  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
+    <div id="detailPesanan" class="text-sm space-y-1 mb-4"></div>
+
+    <div class="space-y-3">
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Jumlah Bayar</label>
+        <input id="jumlahBayar" type="number" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-slate-700 mb-1">Metode Pembayaran</label>
+        <select id="metode" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+          <option value="Cash">Cash</option>
+          <option value="Transfer">Transfer</option>
+          <option value="E-wallet">E-wallet</option>
+        </select>
+      </div>
+      <button id="btnProses" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg py-2">Proses Pembayaran</button>
+    </div>
+
+    <div id="suksesBox" class="hidden mt-4 bg-green-50 text-green-700 rounded-lg px-4 py-3 text-sm"></div>
+  </div>
+</main>
+
+<script src="js/app.js"></script>
+<script>
+const params = new URLSearchParams(window.location.search);
+const pesananId = params.get('pesanan_id');
+let pesanan = null;
+
+(async () => {
+  const user = await checkAuth(false);
+  if (!user) return;
+  setupLogout();
+  await loadPesanan();
+})();
+
+async function loadPesanan() {
+  if (!pesananId) { alert('ID pesanan tidak ditemukan'); return; }
+  const res = await fetch('api/pesanan/detail.php?id=' + pesananId);
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  pesanan = data.pesanan;
+  document.getElementById('detailPesanan').innerHTML = `
+    <div><b>No. Pesanan:</b> ${pesanan.id}</div>
+    <div><b>Nama Pelanggan:</b> ${pesanan.pelanggan_nama}</div>
+    <div><b>Layanan:</b> ${pesanan.layanan}</div>
+    <div><b>Berat:</b> ${pesanan.berat_kg} kg</div>
+    <div><b>Total Biaya:</b> ${formatRupiah(pesanan.total_biaya)}</div>
+  `;
+  document.getElementById('jumlahBayar').value = pesanan.total_biaya;
+}
+
+document.getElementById('btnProses').addEventListener('click', async () => {
+  const jumlah_bayar = parseFloat(document.getElementById('jumlahBayar').value);
+  const metode_pembayaran = document.getElementById('metode').value;
+  const res = await fetch('api/pembayaran/create.php', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ pesanan_id: pesananId, jumlah_bayar, metode_pembayaran })
+  });
+  const data = await res.json();
+  if (!res.ok) { alert(data.error); return; }
+  document.getElementById('suksesBox').classList.remove('hidden');
+  document.getElementById('suksesBox').textContent = 'Pembayaran berhasil! Struk telah dikirim ke WA pelanggan.';
+  document.getElementById('btnProses').disabled = true;
+  setTimeout(() => window.location.href = 'daftar-pesanan.html', 2000);
+});
+</script>
+</body>
+</html>
