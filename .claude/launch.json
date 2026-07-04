@@ -4,7 +4,7 @@
     {
       "name": "laundry-php",
       "runtimeExecutable": "php",
-      "runtimeArgs": ["-S", "localhost:8123", "-t", "laundry-uiux"],
+      "runtimeArgs": ["-S", "localhost:8123", "-t", "."],
       "port": 8123
     }
   ]

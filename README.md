@@ -21,12 +21,13 @@ mysql -u root -p < sql/init.sql
 Edit `config/db.php` jika user/password MySQL Anda berbeda dari default (`root` / tanpa password).
 
 ### 3A. Jalankan dengan XAMPP/Laragon
-Salin folder `laundry-uiux` ke folder `htdocs` (XAMPP) atau `www` (Laragon), lalu buka:
-- Sistem Laundry : http://localhost/laundry-uiux/login.html
-- Simulasi WA    : http://localhost/laundry-uiux/wa-simulation.html
+Salin seluruh isi project ini ke dalam sebuah folder di `htdocs` (XAMPP) atau `www` (Laragon),
+misal `htdocs/laundry-kiloan`, lalu buka:
+- Sistem Laundry : http://localhost/laundry-kiloan/login.html
+- Simulasi WA    : http://localhost/laundry-kiloan/wa-simulation.html
 
 ### 3B. Jalankan dengan PHP built-in server
-Dari dalam folder `laundry-uiux`:
+Dari dalam folder project ini:
 ```
 php -S localhost:8000
 ```
@@ -53,7 +54,6 @@ Lalu buka:
 
 ## Struktur Folder
 ```
-laundry-uiux/
 ├── config/db.php          Koneksi MySQL (mysqli)
 ├── includes/functions.php Helper: harga layanan, generate ID, format pesan WA, auth guard
 ├── api/                   Endpoint backend (dipanggil via fetch dari halaman HTML)
