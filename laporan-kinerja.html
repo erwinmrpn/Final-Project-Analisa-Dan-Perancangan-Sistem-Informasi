@@ -8,27 +8,12 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex">
 
-<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
-  <div class="p-5 border-b border-slate-200">
-    <div class="font-bold text-sky-700 text-lg">🧺 Laundry Kiloan</div>
-    <div class="text-xs text-slate-400">Panel Owner</div>
-  </div>
-  <nav class="flex-1 p-3 space-y-1">
-    <a href="dashboard-owner.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">🏠 Dashboard Owner</a>
-    <a href="laporan-pendapatan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">💰 Laporan Pendapatan</a>
-    <a href="laporan-kinerja.html" class="block px-3 py-2 rounded-lg bg-sky-50 text-sky-700 font-medium">👥 Laporan Kinerja</a>
-    <a href="kelola-pegawai.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">⚙️ Kelola Pegawai</a>
-    <a href="wa-simulation.html" target="_blank" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📱 Lihat WA Pelanggan</a>
-  </nav>
-  <div class="p-4 border-t border-slate-200">
-    <div class="text-sm font-medium text-slate-700" id="userNama">-</div>
-    <button id="logoutBtn" class="text-xs text-red-500 hover:underline mt-1">🚪 Logout</button>
-  </div>
-</aside>
+<div id="sidebarSlot"></div>
 
-<main class="flex-1 p-8">
-  <h1 class="text-2xl font-bold text-slate-800 mb-6">Laporan Kinerja Karyawan</h1>
+<div class="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+  <div id="headerSlot"></div>
 
+  <main class="flex-1 overflow-y-auto p-4 sm:p-8">
   <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-6 flex flex-wrap items-end gap-3">
     <div>
       <label class="block text-sm text-slate-600 mb-1">Tanggal Awal</label>
@@ -56,7 +41,8 @@
       <tbody id="tabelKinerja"></tbody>
     </table>
   </div>
-</main>
+  </main>
+</div>
 
 <script src="js/app.js"></script>
 <script>
@@ -64,15 +50,18 @@ let lastKaryawan = [];
 let lastPeriode = {};
 
 (async () => {
-  const user = await checkAuth(true);
+  const user = await initPage({ requireOwner: true, title: 'Laporan Kinerja' });
   if (!user) return;
-  setupLogout();
-  const today = new Date().toISOString().slice(0, 10);
-  document.getElementById('dari').value = today;
-  document.getElementById('sampai').value = today;
+  const hariIni = new Date();
+  const awalBulan = new Date(hariIni.getFullYear(), hariIni.getMonth(), 1);
+  document.getElementById('dari').value = awalBulan.toISOString().slice(0, 10);
+  document.getElementById('sampai').value = hariIni.toISOString().slice(0, 10);
+  await tampilkanLaporan();
 })();
 
-document.getElementById('btnTampilkan').addEventListener('click', async () => {
+document.getElementById('btnTampilkan').addEventListener('click', tampilkanLaporan);
+
+async function tampilkanLaporan() {
   const dari = document.getElementById('dari').value;
   const sampai = document.getElementById('sampai').value;
   if (!dari || !sampai) { alert('Isi periode terlebih dahulu'); return; }
@@ -91,7 +80,7 @@ document.getElementById('btnTampilkan').addEventListener('click', async () => {
       <td class="px-4 py-3 font-semibold">${k.score_kinerja}%</td>
     </tr>
   `).join('') || '<tr><td colspan="5" class="px-4 py-6 text-center text-slate-400">Belum ada data</td></tr>';
-});
+}
 
 document.getElementById('btnSimpan').addEventListener('click', async () => {
   if (lastKaryawan.length === 0) { alert('Tampilkan laporan terlebih dahulu'); return; }

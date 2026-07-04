@@ -9,13 +9,23 @@ $total_pendapatan = $conn->query("SELECT COALESCE(SUM(jumlah_bayar),0) c FROM tr
 $total_pesanan = $conn->query("SELECT COUNT(*) c FROM pesanan WHERE MONTH(tanggal_masuk)=MONTH(CURDATE()) AND YEAR(tanggal_masuk)=YEAR(CURDATE())")->fetch_assoc()['c'];
 $rata_rata = intval($total_pesanan) > 0 ? floatval($total_pendapatan) / intval($total_pesanan) : 0;
 
+$rentang_valid = [7, 14, 30, 90];
+$rentang = intval($_GET['rentang'] ?? 7);
+if (!in_array($rentang, $rentang_valid)) {
+    $rentang = 7;
+}
+
 $grafik = [];
-$result = $conn->query("SELECT DATE(tanggal) tgl, SUM(jumlah_bayar) total FROM transaksi WHERE status='Lunas' AND tanggal >= DATE_SUB(CURDATE(), INTERVAL 6 DAY) GROUP BY DATE(tanggal)");
+$hari_mundur = $rentang - 1;
+$stmt = $conn->prepare("SELECT DATE(tanggal) tgl, SUM(jumlah_bayar) total FROM transaksi WHERE status='Lunas' AND tanggal >= DATE_SUB(CURDATE(), INTERVAL ? DAY) GROUP BY DATE(tanggal)");
+$stmt->bind_param('i', $hari_mundur);
+$stmt->execute();
+$result = $stmt->get_result();
 $map = [];
 while ($row = $result->fetch_assoc()) {
     $map[$row['tgl']] = floatval($row['total']);
 }
-for ($i = 6; $i >= 0; $i--) {
+for ($i = $hari_mundur; $i >= 0; $i--) {
     $tgl = date('Y-m-d', strtotime("-$i day"));
     $grafik[] = ['tanggal' => $tgl, 'total' => $map[$tgl] ?? 0];
 }
@@ -40,7 +50,8 @@ json_response([
     'total_pendapatan' => floatval($total_pendapatan),
     'total_pesanan' => intval($total_pesanan),
     'rata_rata' => $rata_rata,
-    'grafik_7_hari' => $grafik,
+    'rentang' => $rentang,
+    'grafik' => $grafik,
     'pesanan_terbaru' => $pesanan_terbaru,
     'kinerja_karyawan' => $kinerja_karyawan
 ]);

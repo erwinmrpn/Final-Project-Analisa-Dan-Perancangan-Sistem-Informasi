@@ -8,26 +8,12 @@
 </head>
 <body class="bg-slate-50 min-h-screen flex">
 
-<aside class="w-64 bg-white border-r border-slate-200 flex flex-col shrink-0">
-  <div class="p-5 border-b border-slate-200">
-    <div class="font-bold text-sky-700 text-lg">🧺 Laundry Kiloan</div>
-    <div class="text-xs text-slate-400">Panel Karyawan</div>
-  </div>
-  <nav class="flex-1 p-3 space-y-1">
-    <a href="dashboard-karyawan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">🏠 Dashboard</a>
-    <a href="input-pesanan.html" class="block px-3 py-2 rounded-lg bg-sky-50 text-sky-700 font-medium">📝 Input Pesanan</a>
-    <a href="daftar-pesanan.html" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📋 Daftar Pesanan</a>
-    <a href="wa-simulation.html" target="_blank" class="block px-3 py-2 rounded-lg text-slate-600 hover:bg-slate-100">📱 Lihat WA Pelanggan</a>
-  </nav>
-  <div class="p-4 border-t border-slate-200">
-    <div class="text-sm font-medium text-slate-700" id="userNama">-</div>
-    <button id="logoutBtn" class="text-xs text-red-500 hover:underline mt-1">🚪 Logout</button>
-  </div>
-</aside>
+<div id="sidebarSlot"></div>
 
-<main class="flex-1 p-8 max-w-2xl">
-  <h1 class="text-2xl font-bold text-slate-800 mb-6">Input Pesanan Baru</h1>
+<div class="flex-1 flex flex-col h-screen overflow-hidden min-w-0">
+  <div id="headerSlot"></div>
 
+  <main class="flex-1 overflow-y-auto p-4 sm:p-8 max-w-2xl">
   <!-- STEP 1: Pilih Pelanggan -->
   <div id="step1" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
     <div class="flex items-center justify-between mb-3">
@@ -38,7 +24,7 @@
     <div id="pilihPelangganWrap">
       <label class="block text-sm font-medium text-slate-700 mb-1">Pelanggan Terdaftar</label>
       <div class="flex gap-2">
-        <select id="selectPelanggan" class="flex-1 border border-slate-300 rounded-lg px-3 py-2">
+        <select id="selectPelanggan" class="flex-1 min-w-0 border border-slate-300 rounded-lg px-3 py-2">
           <option value="">— Pilih pelanggan —</option>
         </select>
         <button id="btnPilih" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">Pilih</button>
@@ -108,7 +94,8 @@
       <button id="btnBayarNanti" class="flex-1 bg-slate-600 hover:bg-slate-700 text-white font-semibold rounded-lg py-2">Bayar Nanti</button>
     </div>
   </div>
-</main>
+  </main>
+</div>
 
 <script src="js/app.js"></script>
 <script>
@@ -121,9 +108,8 @@ let pesananId = null;
 const HARGA = { 'Reguler': 7000, 'Express': 12000, 'Cuci+Setrika': 10000 };
 
 (async () => {
-  const user = await checkAuth(false);
+  const user = await initPage({ requireOwner: false, title: 'Input Pesanan Baru' });
   if (!user) return;
-  setupLogout();
   await muatDaftarPelanggan();
 })();
 
