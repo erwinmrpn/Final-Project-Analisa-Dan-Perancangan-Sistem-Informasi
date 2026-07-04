@@ -28,22 +28,32 @@
 <main class="flex-1 p-8 max-w-2xl">
   <h1 class="text-2xl font-bold text-slate-800 mb-6">Input Pesanan Baru</h1>
 
-  <!-- STEP 1: Cari Pelanggan -->
+  <!-- STEP 1: Pilih Pelanggan -->
   <div id="step1" class="bg-white rounded-xl shadow-sm border border-slate-100 p-6 mb-6">
-    <h2 class="font-semibold text-slate-800 mb-3">Step 1 — Cari Pelanggan</h2>
-    <div class="flex gap-2">
-      <input id="noHpInput" type="text" placeholder="Nomor HP pelanggan" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-sky-500">
-      <button id="btnCari" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">Cari</button>
+    <div class="flex items-center justify-between mb-3">
+      <h2 class="font-semibold text-slate-800">Step 1 — Pilih Pelanggan</h2>
+      <button id="btnToggleBaru" class="text-sm text-sky-600 hover:underline">+ Daftarkan Pelanggan Baru</button>
     </div>
 
-    <div id="pelangganDitemukan" class="hidden mt-4 bg-green-50 text-green-700 rounded-lg px-4 py-3 text-sm"></div>
+    <div id="pilihPelangganWrap">
+      <label class="block text-sm font-medium text-slate-700 mb-1">Pelanggan Terdaftar</label>
+      <div class="flex gap-2">
+        <select id="selectPelanggan" class="flex-1 border border-slate-300 rounded-lg px-3 py-2">
+          <option value="">— Pilih pelanggan —</option>
+        </select>
+        <button id="btnPilih" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">Pilih</button>
+      </div>
+    </div>
 
-    <div id="formPelangganBaru" class="hidden mt-4 space-y-3 border-t border-slate-100 pt-4">
-      <p class="text-sm text-slate-500">Pelanggan belum terdaftar. Daftarkan dulu:</p>
+    <div id="formPelangganBaru" class="hidden space-y-3 border-t border-slate-100 pt-4 mt-4">
+      <p class="text-sm text-slate-500 font-medium">Daftarkan Pelanggan Baru</p>
       <input id="namaBaru" type="text" placeholder="Nama pelanggan" class="w-full border border-slate-300 rounded-lg px-3 py-2">
+      <input id="noHpBaru" type="text" placeholder="Nomor HP" class="w-full border border-slate-300 rounded-lg px-3 py-2">
       <input id="alamatBaru" type="text" placeholder="Alamat (opsional)" class="w-full border border-slate-300 rounded-lg px-3 py-2">
       <button id="btnDaftar" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg px-4 py-2 text-sm">Daftarkan & Lanjut</button>
     </div>
+
+    <div id="pelangganDitemukan" class="hidden mt-4 bg-green-50 text-green-700 rounded-lg px-4 py-3 text-sm"></div>
   </div>
 
   <!-- STEP 2: Input Pesanan -->
@@ -104,30 +114,41 @@ const HARGA = { 'Reguler': 7000, 'Express': 12000, 'Cuci+Setrika': 10000 };
   const user = await checkAuth(false);
   if (!user) return;
   setupLogout();
+  await muatDaftarPelanggan();
 })();
 
-document.getElementById('btnCari').addEventListener('click', async () => {
-  const no_hp = document.getElementById('noHpInput').value.trim();
-  if (!no_hp) return;
-  const res = await fetch('api/pelanggan/search.php?no_hp=' + encodeURIComponent(no_hp));
+async function muatDaftarPelanggan() {
+  const res = await fetch('api/pelanggan/list.php');
   const data = await res.json();
-  if (data.pelanggan) {
-    pelanggan = data.pelanggan;
-    document.getElementById('pelangganDitemukan').classList.remove('hidden');
-    document.getElementById('pelangganDitemukan').textContent = `Pelanggan ditemukan: ${pelanggan.nama}`;
-    document.getElementById('formPelangganBaru').classList.add('hidden');
-    lanjutKeStep2();
-  } else {
-    document.getElementById('pelangganDitemukan').classList.add('hidden');
-    document.getElementById('formPelangganBaru').classList.remove('hidden');
-  }
+  const select = document.getElementById('selectPelanggan');
+  select.innerHTML = '<option value="">— Pilih pelanggan —</option>' +
+    data.pelanggan.map(p => `<option value="${p.id}">${p.nama} — ${p.no_hp}</option>`).join('');
+}
+
+document.getElementById('btnToggleBaru').addEventListener('click', () => {
+  const form = document.getElementById('formPelangganBaru');
+  const wrap = document.getElementById('pilihPelangganWrap');
+  const isHidden = form.classList.contains('hidden');
+  form.classList.toggle('hidden', !isHidden);
+  wrap.classList.toggle('hidden', isHidden);
+  document.getElementById('btnToggleBaru').textContent = isHidden ? '← Pilih dari Daftar' : '+ Daftarkan Pelanggan Baru';
+});
+
+document.getElementById('btnPilih').addEventListener('click', () => {
+  const id = document.getElementById('selectPelanggan').value;
+  if (!id) { alert('Pilih pelanggan terlebih dahulu'); return; }
+  const opt = document.getElementById('selectPelanggan').selectedOptions[0];
+  pelanggan = { id, nama: opt.textContent.split(' — ')[0] };
+  document.getElementById('pelangganDitemukan').classList.remove('hidden');
+  document.getElementById('pelangganDitemukan').textContent = `Pelanggan dipilih: ${pelanggan.nama}`;
+  lanjutKeStep2();
 });
 
 document.getElementById('btnDaftar').addEventListener('click', async () => {
-  const no_hp = document.getElementById('noHpInput').value.trim();
+  const no_hp = document.getElementById('noHpBaru').value.trim();
   const nama = document.getElementById('namaBaru').value.trim();
   const alamat = document.getElementById('alamatBaru').value.trim();
-  if (!nama) { alert('Nama wajib diisi'); return; }
+  if (!nama || !no_hp) { alert('Nama dan nomor HP wajib diisi'); return; }
   const res = await fetch('api/pelanggan/create.php', {
     method: 'POST', headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ nama, no_hp, alamat })
@@ -135,7 +156,8 @@ document.getElementById('btnDaftar').addEventListener('click', async () => {
   const data = await res.json();
   if (!res.ok) { alert(data.error); return; }
   pelanggan = data.pelanggan;
-  document.getElementById('formPelangganBaru').classList.add('hidden');
+  document.getElementById('pelangganDitemukan').classList.remove('hidden');
+  document.getElementById('pelangganDitemukan').textContent = `Pelanggan baru terdaftar: ${pelanggan.nama}`;
   lanjutKeStep2();
 });
 
