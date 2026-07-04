@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Owner - Laundry Kiloan</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50: '#eef4ff', 100: '#dbe6fe', 200: '#bcd0fe', 300: '#8ab0fd',
+            400: '#5688fa', 500: '#3466f6', 600: '#1f47ea', 700: '#1a37c4',
+            800: '#1a309d', 900: '#1a2e7c', 950: '#141d4a'
+          }
+        }
+      }
+    }
+  }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
@@ -16,24 +34,34 @@
 
   <main class="flex-1 overflow-y-auto p-4 sm:p-8">
   <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-    <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-      <div class="text-sm text-slate-500">Total Pendapatan (Bulan Ini)</div>
-      <div class="text-2xl font-bold text-sky-700 mt-1" id="statPendapatan">Rp 0</div>
+    <div class="md:col-span-1 rounded-2xl shadow-lg shadow-brand-200 p-5 bg-gradient-to-br from-brand-600 to-brand-800 text-white relative overflow-hidden">
+      <div class="absolute -right-8 -bottom-10 w-32 h-32 rounded-full bg-white/10"></div>
+      <div class="flex items-center gap-3 relative">
+        <span class="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center shrink-0" id="iconPendapatan"></span>
+        <div class="text-sm text-brand-100">Total Pendapatan (Bulan Ini)</div>
+      </div>
+      <div class="text-2xl font-bold mt-3 relative" id="statPendapatan">Rp 0</div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-      <div class="text-sm text-slate-500">Total Pesanan (Bulan Ini)</div>
-      <div class="text-2xl font-bold text-green-700 mt-1" id="statPesanan">0</div>
+    <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
+      <div class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" id="iconPesanan"></span>
+        <div class="text-sm text-slate-500">Total Pesanan (Bulan Ini)</div>
+      </div>
+      <div class="text-2xl font-bold text-slate-800 mt-3" id="statPesanan">0</div>
     </div>
-    <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-      <div class="text-sm text-slate-500">Rata-rata / Pesanan</div>
-      <div class="text-2xl font-bold text-amber-700 mt-1" id="statRata">Rp 0</div>
+    <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
+      <div class="flex items-center gap-3">
+        <span class="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0" id="iconRata"></span>
+        <div class="text-sm text-slate-500">Rata-rata / Pesanan</div>
+      </div>
+      <div class="text-2xl font-bold text-slate-800 mt-3" id="statRata">Rp 0</div>
     </div>
   </div>
 
-  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-8">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-8">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
       <h2 class="font-semibold text-slate-800" id="judulGrafik">Pendapatan 7 Hari Terakhir</h2>
-      <select id="rentangSelect" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm">
+      <select id="rentangSelect" class="border border-slate-300 rounded-lg px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
         <option value="7">7 Hari Terakhir</option>
         <option value="14">14 Hari Terakhir</option>
         <option value="30">30 Hari Terakhir</option>
@@ -44,7 +72,7 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
       <h2 class="font-semibold text-slate-800 mb-3">Pesanan Terbaru</h2>
       <table class="w-full text-sm">
         <thead class="text-slate-500 text-left">
@@ -54,7 +82,7 @@
       </table>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
       <h2 class="font-semibold text-slate-800 mb-3">Kinerja Karyawan Bulan Ini</h2>
       <table class="w-full text-sm">
         <thead class="text-slate-500 text-left">
@@ -74,6 +102,9 @@ let chartInstance = null;
 (async () => {
   const user = await initPage({ requireOwner: true, title: 'Dashboard Owner' });
   if (!user) return;
+  document.getElementById('iconPendapatan').innerHTML = icon('cash', 'w-5 h-5');
+  document.getElementById('iconPesanan').innerHTML = icon('list', 'w-5 h-5');
+  document.getElementById('iconRata').innerHTML = icon('creditCard', 'w-5 h-5');
   await loadDashboard();
   await loadGrafik(document.getElementById('rentangSelect').value);
 })();
@@ -118,7 +149,7 @@ async function loadGrafik(rentang) {
     type: 'bar',
     data: {
       labels: data.grafik.map(d => d.tanggal.slice(5)),
-      datasets: [{ label: 'Pendapatan', data: data.grafik.map(d => d.total), backgroundColor: '#0284c7' }]
+      datasets: [{ label: 'Pendapatan', data: data.grafik.map(d => d.total), backgroundColor: '#3466f6' }]
     },
     options: { responsive: true, plugins: { legend: { display: false } } }
   });

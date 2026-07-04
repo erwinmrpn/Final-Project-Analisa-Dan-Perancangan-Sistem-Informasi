@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Laporan Pendapatan - Laundry Kiloan</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50: '#eef4ff', 100: '#dbe6fe', 200: '#bcd0fe', 300: '#8ab0fd',
+            400: '#5688fa', 500: '#3466f6', 600: '#1f47ea', 700: '#1a37c4',
+            800: '#1a309d', 900: '#1a2e7c', 950: '#141d4a'
+          }
+        }
+      }
+    }
+  }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
@@ -15,40 +33,41 @@
   <div id="headerSlot"></div>
 
   <main class="flex-1 overflow-y-auto p-4 sm:p-8">
-  <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-6 flex flex-wrap items-end gap-3">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-6 flex flex-wrap items-end gap-3">
     <div>
       <label class="block text-sm text-slate-600 mb-1">Tanggal Awal</label>
-      <input id="dari" type="date" class="border border-slate-300 rounded-lg px-3 py-2">
+      <input id="dari" type="date" class="border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
     </div>
     <div>
       <label class="block text-sm text-slate-600 mb-1">Tanggal Akhir</label>
-      <input id="sampai" type="date" class="border border-slate-300 rounded-lg px-3 py-2">
+      <input id="sampai" type="date" class="border border-slate-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-brand-500">
     </div>
-    <button id="btnTampilkan" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">Tampilkan</button>
-    <button id="btnSimpan" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-lg px-4 py-2">Simpan Laporan</button>
+    <button id="btnTampilkan" class="bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-semibold rounded-xl px-4 py-2 shadow-md shadow-brand-200 transition">Tampilkan</button>
+    <button id="btnSimpan" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 font-semibold rounded-xl px-4 py-2 transition">Simpan Laporan</button>
   </div>
 
   <div id="hasil" class="hidden">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-      <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-        <div class="text-sm text-slate-500">Total Pendapatan</div>
-        <div class="text-2xl font-bold text-sky-700 mt-1" id="rTotal">Rp 0</div>
+      <div class="rounded-2xl shadow-lg shadow-brand-200 p-5 bg-gradient-to-br from-brand-600 to-brand-800 text-white relative overflow-hidden">
+        <div class="absolute -right-8 -bottom-10 w-32 h-32 rounded-full bg-white/10"></div>
+        <div class="text-sm text-brand-100 relative">Total Pendapatan</div>
+        <div class="text-2xl font-bold mt-1 relative" id="rTotal">Rp 0</div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+      <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
         <div class="text-sm text-slate-500">Total Pesanan</div>
-        <div class="text-2xl font-bold text-green-700 mt-1" id="rPesanan">0</div>
+        <div class="text-2xl font-bold text-slate-800 mt-1" id="rPesanan">0</div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
+      <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100">
         <div class="text-sm text-slate-500">Rata-rata / Pesanan</div>
-        <div class="text-2xl font-bold text-amber-700 mt-1" id="rRata">Rp 0</div>
+        <div class="text-2xl font-bold text-slate-800 mt-1" id="rRata">Rp 0</div>
       </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 p-5 mb-6">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-6">
       <canvas id="chartHarian" height="90"></canvas>
     </div>
 
-    <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
       <table class="w-full text-sm">
         <thead class="bg-slate-50 text-slate-500 text-left">
           <tr>
@@ -104,7 +123,7 @@ async function tampilkanLaporan() {
   if (chart) chart.destroy();
   chart = new Chart(document.getElementById('chartHarian'), {
     type: 'bar',
-    data: { labels, datasets: [{ label: 'Pendapatan per Hari', data: values, backgroundColor: '#0284c7' }] },
+    data: { labels, datasets: [{ label: 'Pendapatan per Hari', data: values, backgroundColor: '#3466f6' }] },
     options: { responsive: true, plugins: { legend: { display: false } } }
   });
 

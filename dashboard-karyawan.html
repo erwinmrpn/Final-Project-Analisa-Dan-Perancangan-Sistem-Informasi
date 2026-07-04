@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Karyawan - Laundry Kiloan</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50: '#eef4ff', 100: '#dbe6fe', 200: '#bcd0fe', 300: '#8ab0fd',
+            400: '#5688fa', 500: '#3466f6', 600: '#1f47ea', 700: '#1a37c4',
+            800: '#1a309d', 900: '#1a2e7c', 950: '#141d4a'
+          }
+        }
+      }
+    }
+  }
+</script>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
 
@@ -17,23 +35,35 @@
     <h1 class="text-2xl font-bold text-slate-800 mb-6" id="greeting">Halo!</h1>
 
     <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-      <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-        <div class="text-sm text-slate-500">Pesanan Masuk Hari Ini</div>
-        <div class="text-3xl font-bold text-sky-700 mt-1" id="statMasuk">0</div>
+      <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100 flex items-start gap-4">
+        <span class="w-11 h-11 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center shrink-0" id="iconMasuk"></span>
+        <div>
+          <div class="text-sm text-slate-500">Pesanan Masuk Hari Ini</div>
+          <div class="text-3xl font-bold text-slate-800 mt-0.5" id="statMasuk">0</div>
+        </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-        <div class="text-sm text-slate-500">Pesanan Selesai Hari Ini</div>
-        <div class="text-3xl font-bold text-green-700 mt-1" id="statSelesai">0</div>
+      <div class="bg-white rounded-2xl shadow-sm p-5 border border-slate-100 flex items-start gap-4">
+        <span class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0" id="iconSelesai"></span>
+        <div>
+          <div class="text-sm text-slate-500">Pesanan Selesai Hari Ini</div>
+          <div class="text-3xl font-bold text-slate-800 mt-0.5" id="statSelesai">0</div>
+        </div>
       </div>
-      <div class="bg-white rounded-xl shadow-sm p-5 border border-slate-100">
-        <div class="text-sm text-slate-500">Pendapatan Hari Ini</div>
-        <div class="text-3xl font-bold text-amber-700 mt-1" id="statPendapatan">Rp 0</div>
+      <div class="rounded-2xl shadow-lg shadow-brand-200 p-5 bg-gradient-to-br from-brand-600 to-brand-800 text-white flex items-start gap-4 relative overflow-hidden">
+        <div class="absolute -right-6 -bottom-8 w-28 h-28 rounded-full bg-white/10"></div>
+        <span class="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center shrink-0 relative" id="iconPendapatan"></span>
+        <div class="relative">
+          <div class="text-sm text-brand-100">Pendapatan Hari Ini</div>
+          <div class="text-3xl font-bold mt-0.5" id="statPendapatan">Rp 0</div>
+        </div>
       </div>
     </div>
 
     <div class="flex flex-wrap items-center justify-between gap-3 mb-3">
       <h2 class="text-lg font-semibold text-slate-800">Pesanan Aktif Hari Ini</h2>
-      <a href="input-pesanan.html" class="bg-sky-600 hover:bg-sky-700 text-white text-sm font-semibold rounded-lg px-4 py-2">+ Input Pesanan Baru</a>
+      <a href="input-pesanan.html" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white text-sm font-semibold rounded-xl px-4 py-2.5 shadow-md shadow-brand-200 transition">
+        <span id="iconPlus"></span> Input Pesanan Baru
+      </a>
     </div>
 
     <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
@@ -60,6 +90,10 @@
   const user = await initPage({ requireOwner: false, title: 'Dashboard' });
   if (!user) return;
   document.getElementById('greeting').textContent = `Halo, ${user.nama}! Selamat bekerja.`;
+  document.getElementById('iconMasuk').innerHTML = icon('list', 'w-5 h-5');
+  document.getElementById('iconSelesai').innerHTML = icon('checkCircle', 'w-5 h-5');
+  document.getElementById('iconPendapatan').innerHTML = icon('cash', 'w-5 h-5');
+  document.getElementById('iconPlus').innerHTML = icon('plus', 'w-4 h-4');
   await loadStats();
   await loadPesanan();
 })();
@@ -89,7 +123,7 @@ async function loadPesanan() {
       <td class="px-4 py-3">${p.berat_kg} kg</td>
       <td class="px-4 py-3">${statusBadge(p.status)}</td>
       <td class="px-4 py-3 space-x-2">
-        <a href="daftar-pesanan.html" class="text-sky-600 hover:underline">Kelola</a>
+        <a href="daftar-pesanan.html" class="text-brand-600 hover:underline">Kelola</a>
       </td>
     </tr>
   `).join('');

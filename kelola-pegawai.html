@@ -5,6 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Kelola Pegawai - Laundry Kiloan</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50: '#eef4ff', 100: '#dbe6fe', 200: '#bcd0fe', 300: '#8ab0fd',
+            400: '#5688fa', 500: '#3466f6', 600: '#1f47ea', 700: '#1a37c4',
+            800: '#1a309d', 900: '#1a2e7c', 950: '#141d4a'
+          }
+        }
+      }
+    }
+  }
+</script>
 </head>
 <body class="bg-slate-50 min-h-screen flex">
 
@@ -15,10 +33,12 @@
 
   <main class="flex-1 overflow-y-auto p-4 sm:p-8">
   <div class="flex items-center justify-end mb-6">
-    <button id="btnTambah" class="bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg px-4 py-2">+ Tambah Karyawan</button>
+    <button id="btnTambah" class="flex items-center gap-2 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-semibold rounded-xl px-4 py-2.5 shadow-md shadow-brand-200 transition">
+      <span id="iconTambah"></span> Tambah Karyawan
+    </button>
   </div>
 
-  <div class="bg-white rounded-xl shadow-sm border border-slate-100 overflow-x-auto">
+  <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
     <table class="w-full text-sm">
       <thead class="bg-slate-50 text-slate-500 text-left">
         <tr>
@@ -36,8 +56,8 @@
 </div>
 
 <!-- Modal Tambah/Edit -->
-<div id="modalForm" class="hidden fixed inset-0 bg-black/40 flex items-center justify-center p-4">
-  <div class="bg-white rounded-xl shadow-xl p-6 w-full max-w-sm">
+<div id="modalForm" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-[1px] flex items-center justify-center p-4 z-50">
+  <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm">
     <h3 class="font-semibold text-lg mb-4" id="modalTitle">Tambah Karyawan</h3>
     <div class="space-y-3">
       <input type="hidden" id="fId">
@@ -62,8 +82,8 @@
       </div>
     </div>
     <div class="flex gap-3 mt-5">
-      <button id="btnSimpanForm" class="flex-1 bg-sky-600 hover:bg-sky-700 text-white font-semibold rounded-lg py-2">Simpan</button>
-      <button id="btnBatal" class="flex-1 bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold rounded-lg py-2">Batal</button>
+      <button id="btnSimpanForm" class="flex-1 bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 text-white font-semibold rounded-xl py-2 shadow-md shadow-brand-200 transition">Simpan</button>
+      <button id="btnBatal" class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold rounded-xl py-2 transition">Batal</button>
     </div>
   </div>
 </div>
@@ -75,17 +95,30 @@ let mode = 'tambah';
 (async () => {
   const user = await initPage({ requireOwner: true, title: 'Kelola Pegawai' });
   if (!user) return;
+  document.getElementById('iconTambah').innerHTML = icon('plus', 'w-4 h-4');
   await loadPegawai();
 })();
+
+function avatarPegawai(nama) {
+  const inisial = initials(nama);
+  return `<span class="w-8 h-8 rounded-full bg-brand-100 text-brand-700 text-xs font-bold flex items-center justify-center shrink-0">${inisial}</span>`;
+}
 
 async function loadPegawai() {
   const res = await fetch('api/pegawai/list.php');
   const data = await res.json();
   document.getElementById('tabelPegawai').innerHTML = data.pegawai.map(p => `
     <tr class="border-t border-slate-100">
-      <td class="px-4 py-3">${p.nama}</td>
-      <td class="px-4 py-3">${p.username}</td>
-      <td class="px-4 py-3">${p.role}</td>
+      <td class="px-4 py-3">
+        <div class="flex items-center gap-2.5">
+          ${avatarPegawai(p.nama)}
+          <span>${p.nama}</span>
+        </div>
+      </td>
+      <td class="px-4 py-3 text-slate-500">${p.username}</td>
+      <td class="px-4 py-3">
+        <span class="px-2.5 py-1 rounded-full text-xs font-semibold ${p.role === 'Owner' ? 'bg-violet-50 text-violet-700 ring-1 ring-inset ring-violet-200' : 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-200'}">${p.role}</span>
+      </td>
       <td class="px-4 py-3">
         <label class="inline-flex items-center cursor-pointer">
           <input type="checkbox" class="sr-only toggleAktif" data-id="${p.id}" ${p.aktif ? 'checked' : ''}>
@@ -96,7 +129,7 @@ async function loadPegawai() {
         <span class="text-xs ml-1 ${p.aktif ? 'text-emerald-600' : 'text-slate-400'}">${p.aktif ? 'Aktif' : 'Nonaktif'}</span>
       </td>
       <td class="px-4 py-3">
-        <button data-id="${p.id}" data-nama="${p.nama}" data-username="${p.username}" class="btnEdit text-sky-600 hover:underline text-xs">Edit</button>
+        <button data-id="${p.id}" data-nama="${p.nama}" data-username="${p.username}" class="btnEdit text-brand-600 hover:underline text-xs font-medium">Edit</button>
       </td>
     </tr>
   `).join('');

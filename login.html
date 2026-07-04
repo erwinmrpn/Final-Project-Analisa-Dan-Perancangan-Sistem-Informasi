@@ -5,44 +5,63 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login - Laundry Kiloan</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: {
+            50: '#eef4ff', 100: '#dbe6fe', 200: '#bcd0fe', 300: '#8ab0fd',
+            400: '#5688fa', 500: '#3466f6', 600: '#1f47ea', 700: '#1a37c4',
+            800: '#1a309d', 900: '#1a2e7c', 950: '#141d4a'
+          }
+        }
+      }
+    }
+  }
+</script>
 </head>
 <body class="bg-slate-100 min-h-screen flex items-center justify-center p-4">
 
 <div class="w-full max-w-4xl bg-white rounded-2xl shadow-xl overflow-hidden flex">
 
   <!-- Panel Kiri: Branding -->
-  <div class="hidden md:flex md:w-5/12 bg-gradient-to-br from-sky-600 via-sky-700 to-slate-900 p-10 flex-col justify-between text-white relative overflow-hidden">
+  <div class="hidden md:flex md:w-5/12 bg-gradient-to-br from-brand-600 via-brand-700 to-slate-900 p-10 flex-col justify-between text-white relative overflow-hidden">
     <div class="absolute -top-10 -right-16 w-56 h-56 rounded-full bg-white/10"></div>
-    <div class="absolute bottom-0 -left-10 w-40 h-40 rounded-full bg-white/10"></div>
+    <div class="absolute bottom-8 -left-10 w-40 h-40 rounded-full bg-white/10"></div>
+    <div class="absolute top-1/2 right-8 w-16 h-16 rounded-2xl bg-white/5 rotate-12"></div>
 
     <div class="relative">
-      <div class="w-12 h-12 rounded-xl bg-white/15 flex items-center justify-center text-2xl backdrop-blur">🧺</div>
+      <div class="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center backdrop-blur" id="brandIconLg"></div>
       <h1 class="text-2xl font-bold mt-5 leading-snug">Laundry Kiloan</h1>
-      <p class="text-sm text-sky-100/80 mt-1">Sistem Informasi Manajemen Laundry</p>
+      <p class="text-sm text-brand-100/80 mt-1">Sistem Informasi Manajemen Laundry</p>
     </div>
 
-    <div class="relative space-y-4 text-sm text-sky-50/90">
+    <div class="relative space-y-4 text-sm text-brand-50/90">
       <div class="flex items-start gap-3">
-        <span class="mt-0.5">✅</span>
+        <span class="mt-0.5 text-brand-200" id="featIcon1"></span>
         <span>Kelola pesanan, pembayaran, dan status cucian secara real-time</span>
       </div>
-      <div class="flex items-start gap-3">
-        <span class="mt-0.5">📱</span>
+      <div class="flex items-start gap-3 pl-2">
+        <span class="mt-0.5 text-brand-200" id="featIcon2"></span>
         <span>Notifikasi otomatis ke WhatsApp pelanggan</span>
       </div>
       <div class="flex items-start gap-3">
-        <span class="mt-0.5">📊</span>
+        <span class="mt-0.5 text-brand-200" id="featIcon3"></span>
         <span>Laporan pendapatan &amp; kinerja karyawan</span>
       </div>
     </div>
 
-    <p class="relative text-xs text-sky-100/60">© 2026 Laundry Kiloan</p>
+    <p class="relative text-xs text-brand-100/60">© 2026 Laundry Kiloan</p>
   </div>
 
   <!-- Panel Kanan: Form -->
   <div class="w-full md:w-7/12 p-8 sm:p-12">
     <div class="md:hidden text-center mb-8">
-      <div class="mx-auto w-14 h-14 rounded-xl bg-sky-600 flex items-center justify-center text-2xl">🧺</div>
+      <div class="mx-auto w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-700 flex items-center justify-center" id="brandIconSm"></div>
       <h1 class="text-lg font-bold mt-3 text-slate-800">Laundry Kiloan</h1>
     </div>
 
@@ -53,9 +72,9 @@
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Username</label>
         <div class="relative">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">👤</span>
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400" id="userIcon"></span>
           <input type="text" id="username" required autocomplete="username"
-            class="w-full border border-slate-300 rounded-xl pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+            class="w-full border border-slate-300 rounded-xl pl-10 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
             placeholder="Masukkan username">
         </div>
       </div>
@@ -63,23 +82,23 @@
       <div>
         <label class="block text-sm font-medium text-slate-700 mb-1.5">Password</label>
         <div class="relative">
-          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400">🔒</span>
+          <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-slate-400" id="lockIcon"></span>
           <input type="password" id="password" required autocomplete="current-password"
-            class="w-full border border-slate-300 rounded-xl pl-10 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-sky-500 transition"
+            class="w-full border border-slate-300 rounded-xl pl-10 pr-11 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition"
             placeholder="Masukkan password">
           <button type="button" id="btnTogglePassword" tabindex="-1"
             class="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600">
-            <span id="iconEye">👁️</span>
+            <span id="iconEye"></span>
           </button>
         </div>
       </div>
 
       <div id="errorBox" class="hidden bg-red-50 border border-red-100 text-red-600 text-sm rounded-xl px-3 py-2.5 flex items-center gap-2">
-        <span>⚠️</span><span id="errorText"></span>
+        <span id="errorIcon" class="shrink-0"></span><span id="errorText"></span>
       </div>
 
       <button type="submit" id="btnMasuk"
-        class="w-full bg-sky-600 hover:bg-sky-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-2.5 transition flex items-center justify-center gap-2">
+        class="w-full bg-gradient-to-r from-brand-600 to-brand-700 hover:from-brand-700 hover:to-brand-800 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold rounded-xl py-2.5 transition flex items-center justify-center gap-2 shadow-md shadow-brand-200">
         <span id="btnMasukText">Masuk</span>
       </button>
     </form>
@@ -87,26 +106,40 @@
     <details class="mt-6 text-xs text-slate-500 bg-slate-50 rounded-xl px-4 py-3 border border-slate-100">
       <summary class="cursor-pointer font-medium text-slate-600 select-none">Akun untuk uji coba</summary>
       <div class="mt-2 space-y-1">
-        <div>👑 Owner &nbsp;— <code class="bg-white border border-slate-200 rounded px-1">owner</code></div>
-        <div>🧑‍💼 Karyawan — <code class="bg-white border border-slate-200 rounded px-1">budi</code> / <code class="bg-white border border-slate-200 rounded px-1">siti</code></div>
+        <div>Owner &nbsp;— <code class="bg-white border border-slate-200 rounded px-1">owner</code></div>
+        <div>Karyawan — <code class="bg-white border border-slate-200 rounded px-1">budi</code> / <code class="bg-white border border-slate-200 rounded px-1">siti</code></div>
         <div class="pt-1">Password semua akun: <code class="bg-white border border-slate-200 rounded px-1">password123</code></div>
       </div>
     </details>
 
     <div class="mt-4 text-center">
-      <a href="wa-simulation.html" target="_blank" class="text-xs text-sky-600 hover:underline">📱 Lihat Simulasi WhatsApp Pelanggan</a>
+      <a href="wa-simulation.html" target="_blank" class="inline-flex items-center gap-1.5 text-xs text-brand-600 hover:underline">
+        <span id="phoneLinkIcon"></span> Lihat Simulasi WhatsApp Pelanggan
+      </a>
     </div>
   </div>
 </div>
 
+<script src="js/app.js"></script>
 <script>
+document.getElementById('brandIconLg').innerHTML = icon('droplet', 'w-6 h-6 text-white');
+document.getElementById('brandIconSm').innerHTML = icon('droplet', 'w-6 h-6 text-white');
+document.getElementById('featIcon1').innerHTML = icon('checkCircle', 'w-5 h-5');
+document.getElementById('featIcon2').innerHTML = icon('phone', 'w-5 h-5');
+document.getElementById('featIcon3').innerHTML = icon('cash', 'w-5 h-5');
+document.getElementById('userIcon').innerHTML = icon('userCircle', 'w-5 h-5');
+document.getElementById('lockIcon').innerHTML = icon('lock', 'w-5 h-5');
+document.getElementById('errorIcon').innerHTML = icon('warning', 'w-5 h-5');
+document.getElementById('phoneLinkIcon').innerHTML = icon('phone', 'w-4 h-4');
+
 const passwordInput = document.getElementById('password');
 const iconEye = document.getElementById('iconEye');
+iconEye.innerHTML = icon('eye', 'w-5 h-5');
 
 document.getElementById('btnTogglePassword').addEventListener('click', () => {
   const showing = passwordInput.type === 'text';
   passwordInput.type = showing ? 'password' : 'text';
-  iconEye.textContent = showing ? '👁️' : '🙈';
+  iconEye.innerHTML = icon(showing ? 'eye' : 'eyeSlash', 'w-5 h-5');
 });
 
 document.getElementById('loginForm').addEventListener('submit', async (e) => {
