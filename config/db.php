@@ -1,4 +1,8 @@
 <?php
+// PHP default ke UTC, sedangkan MySQL server pakai timezone lokal (WIB) -
+// tanpa ini, perhitungan tanggal "hari ini" di PHP (mis. grafik dashboard) meleset.
+date_default_timezone_set('Asia/Jakarta');
+
 // Konfigurasi koneksi MySQL
 $DB_HOST = 'localhost';
 $DB_USER = 'root';
